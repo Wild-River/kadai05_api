@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おでかけBGM</title>
+</head>
+
+<body>
+    <div id="app">
+        <h1>おでかけBGM</h1>
+        <p class="lead">写真を選ぶと、その雰囲気に合った音楽を生成します。</p>
+
+        <input type="file" id="photo-input" accept="image/*">
+        <button id="generate-btn">BGMを生成</button>
+
+        <p id="status"></p>
+        <p id="reading"></p>
+        <audio id="player" controls style="display:none; width:100%;"></audio>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
