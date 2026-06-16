@@ -10,7 +10,16 @@ initializeApp();
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const ELEVENLABS_API_KEY = defineSecret("ELEVENLABS_API_KEY");
 
-// ── ① Claude vision: 写真 → 音楽プロンプト ──────────────────
+/**
+ * Claude（vision）に写真を渡し、写真の雰囲気に合った音楽生成用の情報を作る。
+ * 曲名・雰囲気の説明・ElevenLabs用プロンプト・インスト判定をJSONで受け取る。
+ * @param {string} base64 - 画像のbase64データ（プレフィックスなし）
+ * @param {string} mediaType - 画像のMIMEタイプ（例: "image/jpeg"）
+ * @param {string} apiKey - Anthropic APIキー
+ * @returns {Promise<{title: string, reading: string, prompt: string, instrumental: boolean}>}
+ *   Claudeが生成した音楽メタ情報
+ * @throws {HttpsError} Claude APIエラー、またはJSON解析に失敗した場合
+ */
 async function generateMusicPrompt(base64, mediaType, apiKey) {
     const instruction =
         "You are a music director who translates the atmosphere of a photograph " +
@@ -69,7 +78,16 @@ async function generateMusicPrompt(base64, mediaType, apiKey) {
     return parsed; // { reading, prompt, instrumental }
 }
 
-// ── ② ElevenLabs Music: プロンプト → 音楽バイナリ ────────────
+/**
+ * ElevenLabs Music APIにプロンプトを渡し、音楽を生成して音声バイナリを得る。
+ * @param {string} prompt - 音楽生成用の英語プロンプト
+ * @param {boolean} instrumental - true ならインストゥルメンタルのみで生成
+ * @param {number} lengthMs - 曲の長さ（ミリ秒）
+ * @param {string} apiKey - ElevenLabs APIキー
+ * @returns {Promise<{buffer: Buffer, songId: (string|null)}>}
+ *   生成された音声データと、ElevenLabs側の曲ID
+ * @throws {HttpsError} ElevenLabs APIエラーの場合
+ */
 async function generateMusic(prompt, instrumental, lengthMs, apiKey) {
     const res = await fetch("https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128", {
         method: "POST",
@@ -95,7 +113,14 @@ async function generateMusic(prompt, instrumental, lengthMs, apiKey) {
     return { buffer: Buffer.from(arrayBuffer), songId };
 }
 
-// ── ③ Storage に保存して公開URLを得る ───────────────────────
+/**
+ * 音声バイナリをFirebase Storageに保存し、再生用の公開URLを返す。
+ * ダウンロードトークンを付与して保存するため、署名URLなしで再生できる。
+ * @param {Buffer} buffer - 保存する音声データ
+ * @param {(string|null)} uid - 保存先を分けるためのユーザーID（未ログインなら "anon"）
+ * @returns {Promise<{url: string, path: string}>}
+ *   再生用の公開URLと、Storage上の保存パス
+ */
 async function saveToStorage(buffer, uid) {
     const bucket = getStorage().bucket();
     const id = crypto.randomUUID();
@@ -118,7 +143,14 @@ async function saveToStorage(buffer, uid) {
     return { url, path };
 }
 
-// ── メイン: onCall ハンドラ ─────────────────────────────────
+/**
+ * 写真からBGMを生成するメインのCallable関数。
+ * フロントから { imageBase64, mediaType, lengthMs } を受け取り、
+ * 写真 → Claude（プロンプト生成）→ ElevenLabs（音楽生成）→ Storage（保存）
+ * の順に処理して、曲名・コメント・再生URLなどを返す。
+ * @returns {Promise<object>} title, reading, prompt, instrumental, audioUrl, storagePath, songId を含むオブジェクト
+ * @throws {HttpsError} 画像データが無い場合、または各API処理で失敗した場合
+ */
 exports.composeBgmFromPhoto = onCall(
     {
         region: "asia-northeast1", // 東京リージョン
@@ -133,7 +165,8 @@ exports.composeBgmFromPhoto = onCall(
             throw new HttpsError("invalid-argument", "画像データが必要です。");
         }
 
-        // 長さは 10〜30秒の範囲に収める（プロトタイプ既定: 20秒）
+        // lengthMsを10000〜30000msの範囲に収める（未指定・異常値は20000にフォールバック）。
+        // Math.max で下限10秒を保証し、Math.min で上限30秒を保証する。
         const safeLength = Math.min(Math.max(Number(lengthMs) || 20000, 10000), 30000);
 
         const uid = request.auth?.uid || null;

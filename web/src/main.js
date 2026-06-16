@@ -23,8 +23,11 @@ const timeCurrent = document.getElementById("time-current");
 const timeTotal = document.getElementById("time-total");
 
 
-
-// コントロールボタンの有効/無効をまとめて切り替え
+/**
+ * 3つのコントロールボタン（再生・戻る・進む）の有効/無効をまとめて切り替える。
+ * @param {boolean} enabled - true で有効（押せる）、false で無効（押せない）
+ * @returns {void}
+ */
 function setControlsEnabled(enabled) {
   btnPlay.disabled = !enabled;
   btnBack.disabled = !enabled;
@@ -49,7 +52,14 @@ fileInput.onchange = () => {
   generateBgm(file);
 };
 
-// ===== BGM生成 =====
+/**
+ * 写真からBGMを生成する一連の処理。
+ * 画像を縮小 → Cloud Functions（composeBgm）を呼び出し →
+ * 返ってきた曲名・コメント・音声URLを画面に反映する。
+ * 生成中・成功・失敗それぞれでボタンの有効状態を切り替える。
+ * @param {File} file - ユーザーが選択した画像ファイル
+ * @returns {Promise<void>} 生成と表示が完了すると解決する
+ */
 async function generateBgm(file) {
   photoFrame.disabled = true;
   setControlsEnabled(false); // 生成中は無効
@@ -133,7 +143,11 @@ player.onended = () => {
   seekFill.style.width = "0%";
 };
 
-// 秒を m:ss 形式に
+/**
+ * 秒数を「分:秒」形式（m:ss）の文字列に変換する。
+ * @param {number} sec - 秒数（小数を含む場合あり）
+ * @returns {string} "1:05" のような形式。NaN のときは "0:00"
+ */
 function formatTime(sec) {
   if (isNaN(sec)) return "0:00";
   const m = Math.floor(sec / 60);
@@ -141,7 +155,15 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
-// ===== 画像を長辺maxまで縮小し base64 で返す =====
+/**
+ * 画像ファイルを長辺max px以内に縮小し、base64文字列で返す。
+ * canvasに描画し直すため、元画像のEXIF（GPS位置情報・撮影日時など）は
+ * この時点で自動的に除去される（プライバシー保護）。
+ * @param {File} file - 変換対象の画像ファイル
+ * @param {number} max - 長辺の最大ピクセル数（例: 1500）
+ * @param {number} quality - JPEG品質（0〜1、例: 0.85）
+ * @returns {Promise<{base64: string, mediaType: string}>} base64データとMIMEタイプ
+ */
 function downscaleToBase64(file, max, quality) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
