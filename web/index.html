@@ -4,20 +4,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>おでかけBGM</title>
+    <title>ココで音楽</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
     <div id="app">
-        <h1>おでかけBGM</h1>
-        <p class="lead">写真を選ぶと、その雰囲気に合った音楽を生成します。</p>
+        <div class="app-header">
+            <h1 class="app-title">ココで音楽</h1>
+            <p class="app-tagline">風景に、音を。</p>
+        </div>
 
-        <input type="file" id="photo-input" accept="image/*">
-        <button id="generate-btn">BGMを生成</button>
+        <!-- 丸い写真（押すと選択） -->
+        <button id="photo-frame" class="photo-frame" aria-label="写真を選ぶ">
+            <img id="photo-preview" class="photo-preview" alt="">
+            <span id="photo-placeholder" class="photo-placeholder">
+                <span class="placeholder-icon">＋</span>
+                <span class="placeholder-text">写真を選ぶ</span>
+            </span>
+        </button>
+        <input type="file" id="photo-input" accept="image/*" hidden>
 
-        <p id="status"></p>
-        <p id="reading"></p>
-        <audio id="player" controls style="display:none; width:100%;"></audio>
+        <!-- 曲名・コメント -->
+        <div class="track-info">
+            <p id="track-title" class="track-title">- - -</p>
+            <p id="track-comment" class="track-comment">写真を選んで音楽を生成しよう</p>
+        </div>
+
+        <!-- 再生バー -->
+        <div class="seek-area">
+            <div id="seek-bar" class="seek-bar">
+                <div id="seek-fill" class="seek-fill"></div>
+            </div>
+            <div class="seek-time">
+                <span id="time-current">0:00</span>
+                <span id="time-total">0:00</span>
+            </div>
+        </div>
+
+        <!-- コントロール -->
+        <div class="controls">
+            <button id="btn-back" class="ctrl-btn" aria-label="10秒戻る">◁</button>
+            <button id="btn-play" class="ctrl-btn ctrl-play" aria-label="再生">▶</button>
+            <button id="btn-forward" class="ctrl-btn" aria-label="10秒進む">▷</button>
+        </div>
+
+
+        <!-- 音声（非表示・制御用） -->
+        <audio id="player" hidden></audio>
     </div>
     <script type="module" src="/src/main.js"></script>
 </body>
