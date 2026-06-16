@@ -214,3 +214,34 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* アイコン共通 */
+.ctrl-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor; /* ボタンの文字色を継承（色の制御が楽） */
+}
+
+/* 戻る・進むは少し小さめ */
+#btn-back .ctrl-icon,
+#btn-forward .ctrl-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* 再生ボタンは少し大きめ */
+.ctrl-play .ctrl-icon {
+  width: 30px;
+  height: 30px;
+}
+
+/* 再生・ポーズの切り替え */
+.icon-pause {
+  display: none;
+} /* 普段はポーズを隠す */
+.ctrl-play.playing .icon-play {
+  display: none;
+} /* 再生中は再生を隠す */
+.ctrl-play.playing .icon-pause {
+  display: block;
+} /* 再生中はポーズを見せる */

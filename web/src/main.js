@@ -98,11 +98,9 @@ btnPlay.onclick = () => {
 
 // 再生状態に合わせてボタンの見た目を変える
 player.onplay = () => {
-  btnPlay.textContent = "❚❚";
   btnPlay.classList.add("playing");
 };
 player.onpause = () => {
-  btnPlay.textContent = "▶";
   btnPlay.classList.remove("playing");
 };
 
@@ -138,7 +136,6 @@ seekBar.onclick = (e) => {
 
 // 曲が終わったら
 player.onended = () => {
-  btnPlay.textContent = "▶";
   btnPlay.classList.remove("playing");
   seekFill.style.width = "0%";
 };

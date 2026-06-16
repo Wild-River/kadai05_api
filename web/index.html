@@ -48,11 +48,29 @@
 
         <!-- コントロール -->
         <div class="controls">
-            <button id="btn-back" class="ctrl-btn" aria-label="10秒戻る">◁</button>
-            <button id="btn-play" class="ctrl-btn ctrl-play" aria-label="再生">▶</button>
-            <button id="btn-forward" class="ctrl-btn" aria-label="10秒進む">▷</button>
-        </div>
+            <button id="btn-back" class="ctrl-btn" aria-label="10秒戻る">
+                <svg viewBox="0 0 24 24" class="ctrl-icon">
+                    <path d="M11 6L4 12l7 6V6z M20 6l-7 6 7 6V6z" />
+                </svg>
+            </button>
 
+            <button id="btn-play" class="ctrl-btn ctrl-play" aria-label="再生">
+                <!-- 再生（三角） -->
+                <svg viewBox="0 0 24 24" class="ctrl-icon icon-play">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                <!-- ポーズ（二本線） -->
+                <svg viewBox="0 0 24 24" class="ctrl-icon icon-pause">
+                    <path d="M6 5h4v14H6z M14 5h4v14h-4z" />
+                </svg>
+            </button>
+
+            <button id="btn-forward" class="ctrl-btn" aria-label="10秒進む">
+                <svg viewBox="0 0 24 24" class="ctrl-icon">
+                    <path d="M13 6l7 6-7 6V6z M4 6l7 6-7 6V6z" />
+                </svg>
+            </button>
+        </div>
 
         <!-- 音声（非表示・制御用） -->
         <audio id="player" hidden></audio>
