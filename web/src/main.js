@@ -32,7 +32,7 @@ generateBtn.onclick = async () => {
     const res = await composeBgm({
       imageBase64: base64,
       mediaType, //キー名と変数名が同じときは省略できる
-      lengthMs: 20000,
+      lengthMs: 10000,// 10秒（テスト中はクレジット節約のため短め）
     });
 
     const { reading, audioUrl } = res.data;
