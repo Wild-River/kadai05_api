@@ -1,6 +1,6 @@
 # ①課題名
 
-おでかけBGM
+ココで音楽 - 風景に、音を。
 
 ## ②課題内容（どんな作品か）
 
@@ -18,7 +18,7 @@ https://photo-music-2026gs.web.app/
 ## ⑤工夫した点・こだわった点
 
 - 2つのAIを組み合わせた二段構成にしました。まず Claude（vision）が写真を解析して「どんな音楽が合うか」のプロンプトを生成し、そのプロンプトを ElevenLabs（Music API）に渡して実際の音楽を生成しています。
-- APIキー（Claude / ElevenLabs）は、フロントに絶対に出さないよう Firebase Functions のシークレットに格納し、サーバー側（Cloud Functions）でのみ使用しています。
+- APIキー（Claude / ElevenLabs）は、フロントに出さないよう Firebase Functions のシークレットに格納し、サーバー側（Cloud Functions）でのみ使用しています。
 - 処理の流れを「写真 → Claude → ElevenLabs → Storage → 再生URL」と1つの関数（onCall）にまとめ、各段階でエラーを切り分けられるようにしました。
 - 写真は送信前にブラウザ側でリサイズ（canvasで長辺1500pxに縮小）してから送ることで、通信量を抑えています。
 - 生成した音楽は Firebase Storage に保存し、その再生URLを返す仕組みにしました（音声ファイル本体とURLを分けて扱う設計）。

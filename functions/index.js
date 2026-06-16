@@ -16,6 +16,7 @@ async function generateMusicPrompt(base64, mediaType, apiKey) {
         "You are a music director who translates the atmosphere of a photograph " +
         "into a prompt for a text-to-music AI (ElevenLabs Music). " +
         "Respond with ONLY a JSON object, no markdown, no preamble. Keys: " +
+        '"title" (a short, evocative song title that fits the mood — Japanese or English, whichever suits the photo better. If Japanese, max 10 characters; if English, max 20 characters), ' +
         '"reading" (a short Japanese sentence describing the mood, for the user to read), ' +
         '"prompt" (an English comma-separated music prompt: genre, instruments, tempo in BPM, ' +
         "key/chord feel, and mood — suitable for ElevenLabs Music, under 600 characters), " +
@@ -152,6 +153,7 @@ exports.composeBgmFromPhoto = onCall(
         const { url, path } = await saveToStorage(buffer, uid);
 
         return {
+            title: meta.title,
             reading: meta.reading,
             prompt: meta.prompt,
             instrumental: meta.instrumental === true,
