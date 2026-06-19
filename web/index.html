@@ -21,11 +21,36 @@
 
         <!-- 丸い写真（押すと選択） -->
         <button id="photo-frame" class="photo-frame" aria-label="写真を選ぶ">
-            <img id="photo-preview" class="photo-preview" alt="">
-            <span id="photo-placeholder" class="photo-placeholder">
-                <span class="placeholder-icon">＋</span>
-                <span class="placeholder-text">写真を選ぶ</span>
-            </span>
+            <div class="photo-inner">
+                <img id="photo-preview" class="photo-preview" alt="">
+                <span id="photo-placeholder" class="photo-placeholder">
+                    <span class="placeholder-icon">＋</span>
+                    <span class="placeholder-text">写真を選ぶ</span>
+                </span>
+
+                <!-- 水アニメーション（生成中だけ表示） -->
+                <div id="water-layer" class="water-layer">
+                    <!-- 波の水面（SVGを3枚重ねる） -->
+                    <div class="water-surface">
+                        <svg class="wave wave-1" viewBox="0 0 400 70" preserveAspectRatio="none">
+                            <path d="M0,35 Q50,0 100,35 T200,35 T300,35 T400,35 V70 H0 Z" />
+                        </svg>
+                        <svg class="wave wave-2" viewBox="0 0 400 70" preserveAspectRatio="none">
+                            <path d="M0,40 Q50,68 100,40 T200,40 T300,40 T400,40 V70 H0 Z" />
+                        </svg>
+                        <svg class="wave wave-3" viewBox="0 0 400 70" preserveAspectRatio="none">
+                            <path d="M0,35 Q60,8 120,35 T240,35 T360,35 T480,35 V70 H0 Z" />
+                        </svg>
+                    </div>
+                    <!-- 水滴 -->
+                    <div id="drops" class="drops">
+                        <span class="drop"></span>
+                        <span class="drop"></span>
+                        <span class="drop"></span>
+                    </div>
+                </div>
+
+            </div>
         </button>
         <input type="file" id="photo-input" accept="image/*" hidden>
 

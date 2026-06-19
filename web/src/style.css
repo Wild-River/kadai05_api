@@ -5,8 +5,12 @@
   --shadow-light: #ffffff; /* 明るい影（左上） */
   --shadow-dark: #c4c8d4; /* 暗い影（右下） */
   --accent: #5b6cff; /* アクセント（再生中など） */
+  --accent-grad: linear-gradient(145deg, #5ec5ff, #2a6bff);
   --text: #3a3f55; /* メインテキスト */
   --text-sub: #8a90a6; /* サブテキスト */
+  --water-1: #d2ecff; /* 薄い水色（手前・明るい） */
+  --water-2: #5a9fe3; /* 中間の水色 */
+  --water-3: #1b58b2; /* 少し濃い青（奥・深い） */
 }
 
 /* ===== ベース ===== */
@@ -141,7 +145,7 @@ body {
   width: 0%;
   height: 100%;
   border-radius: 4px;
-  background: var(--accent);
+  background: var(--accent-grad);
   transition: width 0.1s linear;
 }
 
@@ -203,7 +207,7 @@ body {
 
 /* 再生中の再生ボタン（アクセントカラー） */
 .ctrl-play.playing {
-  background: var(--accent);
+  background: var(--accent-grad);
   color: #fff;
   box-shadow:
     6px 6px 12px var(--shadow-dark),
@@ -246,3 +250,186 @@ body {
 .ctrl-play.playing .icon-pause {
   display: block;
 } /* 再生中はポーズを見せる */
+
+/* 円の中身を重ねる土台 */
+.photo-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden; /* 円からはみ出た水を隠す */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: none;
+}
+
+/* 生成中、写真を薄く見せる */
+.photo-inner.generating .photo-preview {
+  display: block;
+  opacity: 0.35;
+}
+
+/* ===== 水レイヤー ===== */
+.water-layer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background: var(--water-2);
+  opacity: 0.5;
+  display: none;
+}
+
+.photo-inner.generating .water-layer {
+  display: block;
+  animation: fillUp 18s ease-out forwards;
+}
+
+@keyframes fillUp {
+  from {
+    height: 0%;
+  }
+  to {
+    height: 100%;
+  }
+}
+
+/* 水面（波の置き場・水レイヤーの上端に乗せる） */
+.water-surface {
+  position: absolute;
+  top: -30px; /* 水面を水レイヤーの上端に */
+  left: 0;
+  width: 100%;
+  height: 36px;
+}
+
+/* 波の共通スタイル */
+.wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%; /* 横長にして、流れてもすき間ができないように */
+  height: 100%;
+  fill: var(--water-2);
+}
+
+/* 3枚の波を、速さ・透明度・向きを変えて重ねる */
+.wave-1 {
+  fill: var(--water-1); /* 薄い水色 */
+  opacity: 0.7;
+  animation: waveMove 10s linear infinite;
+}
+.wave-2 {
+  fill: var(--water-2); /* 中間 */
+  opacity: 0.6;
+  animation: waveMove 20s linear infinite reverse; /* 逆向き・ゆっくり */
+}
+.wave-3 {
+  fill: var(--water-3); /* 濃い青 */
+  opacity: 0.6;
+  animation: waveMove 30s linear infinite; /* もっとゆっくり */
+}
+
+/* 波を横に流す（うねって見える） */
+@keyframes waveMove {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-5%);
+  }
+}
+
+/* ===== 水滴 ===== */
+.drops {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.photo-inner.generating .drops {
+  display: block;
+}
+
+.drop {
+  position: absolute;
+  bottom: 0;
+  background: var(--water-1);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: dropUp 2.5s ease-in infinite;
+}
+
+/* 3つの水滴を、位置とタイミングをずらす */
+.drop:nth-child(1) {
+  left: 25%;
+  width: 4px;
+  height: 4px;
+  opacity: 0.9;
+  animation-delay: 0s;
+}
+.drop:nth-child(2) {
+  left: 75%;
+  width: 6px;
+  height: 6px;
+  opacity: 0.6;
+  animation-delay: 0.5s;
+}
+.drop:nth-child(3) {
+  left: 45%;
+  width: 8px;
+  height: 8px;
+  opacity: 0.75;
+  animation-delay: 1s;
+}
+
+@keyframes dropUp {
+  0% {
+    bottom: 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    bottom: 100%; /* 水面（water-layerの上端）まで */
+    opacity: 0;
+  }
+}
+
+/* 文字が跳ねるアニメーション */
+.bounce-char {
+  display: inline-block; /* 跳ねさせるにはinline-blockが必要 */
+  animation: charBounce 2s ease-in-out infinite;
+}
+
+@keyframes charBounce {
+  0% {
+    transform: translateY(0);
+  }
+  15% {
+    transform: translateY(-8px);
+  } /* 跳ねる */
+  30% {
+    transform: translateY(0);
+  } /* 着地 */
+  100% {
+    transform: translateY(0);
+  } /* 残りは待つ（ポーズ） */
+}

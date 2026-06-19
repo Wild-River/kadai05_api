@@ -12,6 +12,7 @@ const photoPlaceholder = document.getElementById("photo-placeholder");
 const trackTitle = document.getElementById("track-title");
 const trackComment = document.getElementById("track-comment");
 const player = document.getElementById("player");
+const photoInner = document.querySelector(".photo-inner");
 
 const btnPlay = document.getElementById("btn-play");
 const btnBack = document.getElementById("btn-back");
@@ -42,13 +43,11 @@ fileInput.onchange = () => {
   const file = fileInput.files[0];
   if (!file) return;
 
-  // プレビュー表示（丸い写真に）
+  // プレビューを薄く表示（水アニメの下に）
   const previewUrl = URL.createObjectURL(file);
   photoPreview.src = previewUrl;
-  photoPreview.style.display = "block";
   photoPlaceholder.style.display = "none";
 
-  // すぐ生成を開始
   generateBgm(file);
 };
 
@@ -63,10 +62,24 @@ fileInput.onchange = () => {
 async function generateBgm(file) {
   photoFrame.disabled = true;
   setControlsEnabled(false); // 生成中は無効
-  trackTitle.textContent = "♪ 生成中…";
+  photoInner.classList.add("generating");   // 水アニメ開始
+
+  // 満ちきったタイミングで filled を付ける（気泡が出る）
+  const fillTime = 18000;  // CSSの fillUp の秒数に合わせる
+  const fillTimer = setTimeout(() => {
+    photoInner.classList.add("filled");
+  }, fillTime);
+
+  setBouncingText(trackTitle, "♪ 生成中…");
   trackComment.textContent = "写真から音楽を作っています（数十秒）";
 
   try {
+    // ===== テストモード（クレジット消費なし）=====
+    // await new Promise(resolve => setTimeout(resolve, fillTime));  // 指定秒待つ
+    // trackTitle.textContent = "テスト曲名";
+    // trackComment.textContent = "アニメーション確認用のダミーです";
+
+    // ===== 本番モード（クレジット消費あり）=====
     const { base64, mediaType } = await downscaleToBase64(file, 1500, 0.85);
     const res = await composeBgm({ imageBase64: base64, mediaType, lengthMs: 20000 });
     const { title, reading, audioUrl } = res.data;
@@ -81,9 +94,28 @@ async function generateBgm(file) {
     trackComment.textContent = "エラーが発生しました。もう一度お試しください";
     setControlsEnabled(false);          // 失敗時は無効のまま
   } finally {
+    clearTimeout(fillTimer);
     photoFrame.disabled = false;
+    photoInner.classList.remove("generating");   // 水アニメ終了
+    photoInner.classList.remove("filled");
+    photoPreview.style.display = "block";          // 写真をはっきり表示
   }
+}
 
+/**
+ * 文字列を1文字ずつ<span>に分け、順番に跳ねるアニメーションを付けて表示する。
+ * @param {HTMLElement} el - 表示先の要素
+ * @param {string} text - 表示する文字列
+ */
+function setBouncingText(el, text) {
+  el.innerHTML = "";   // 一旦空に
+  [...text].forEach((char, i) => {
+    const span = document.createElement("span");
+    span.className = "bounce-char";
+    span.textContent = char;
+    span.style.animationDelay = `${i * 0.08}s`;   // 1文字ずつ遅らせる
+    el.appendChild(span);
+  });
 }
 
 // ===== 再生・ポーズ =====
