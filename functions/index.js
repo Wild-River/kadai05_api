@@ -2,6 +2,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { initializeApp } = require("firebase-admin/app");
 const { getStorage } = require("firebase-admin/storage");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const crypto = require("crypto");
 
 initializeApp();
@@ -185,7 +186,21 @@ exports.composeBgmFromPhoto = onCall(
         // ③ 保存
         const { url, path } = await saveToStorage(buffer, uid);
 
+        const db = getFirestore();
+        const docRef = await db.collection("generated_music").add({
+            uid,
+            title: meta.title,
+            reading: meta.reading,
+            prompt: meta.prompt,
+            instrumental: meta.instrumental === true,
+            audioUrl: url,
+            storagePath: path,
+            songId,
+            createdAt: FieldValue.serverTimestamp(),
+        });
+
         return {
+            id: docRef.id,
             title: meta.title,
             reading: meta.reading,
             prompt: meta.prompt,
@@ -196,3 +211,4 @@ exports.composeBgmFromPhoto = onCall(
         };
     }
 );
+

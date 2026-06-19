@@ -1,7 +1,9 @@
 import "./style.css";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "./firebase.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
 
+const db = getFirestore();
 const composeBgm = httpsCallable(functions, "composeBgmFromPhoto");
 
 // 要素を取得
@@ -23,6 +25,7 @@ const seekFill = document.getElementById("seek-fill");
 const timeCurrent = document.getElementById("time-current");
 const timeTotal = document.getElementById("time-total");
 
+const generateMusic = document.getElementById("generated-music");
 
 /**
  * 3つのコントロールボタン（再生・戻る・進む）の有効/無効をまとめて切り替える。
@@ -87,7 +90,8 @@ async function generateBgm(file) {
     trackTitle.textContent = title || "Untitled";
     trackComment.textContent = reading || "";
     player.src = audioUrl;
-    setControlsEnabled(true);           // 曲ができたら有効に
+    setControlsEnabled(true);   // 曲ができたら有効に
+    await showGeneratedMusic(); // Firestoreから一覧を再取得
   } catch (err) {
     console.error(err);
     trackTitle.textContent = "- - -";
@@ -217,3 +221,48 @@ function downscaleToBase64(file, max, quality) {
     reader.readAsDataURL(file);
   });
 }
+
+/**
+ * 生成された音楽を画面に追加表示する
+ * @param {string} title
+ * @param {string} comment
+ * @param {string} audioUrl
+ */
+async function showGeneratedMusic() {
+  const q = query(
+    collection(db, "generated_music"),
+    orderBy("createdAt", "desc")
+  );
+
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    generateMusic.innerHTML = "<p>まだ音楽がありません</p>";
+    return;
+  }
+
+  generateMusic.innerHTML = "";
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+
+    const item = document.createElement("div");
+    item.className = "music-card";
+
+    item.innerHTML = /*html*/`
+    <h3>${data.title}</h3>
+    <p>${data.reading}</p>
+    `;
+
+    item.addEventListener("click", () => {
+      player.src = data.audioUrl;
+      trackTitle.textContent = data.title;
+      trackComment.textContent = data.reading;
+      player.play();
+    })
+
+    generateMusic.appendChild(item);
+  })
+}
+
+showGeneratedMusic();
