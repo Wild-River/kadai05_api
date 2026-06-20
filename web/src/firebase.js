@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFunctions } from "firebase/functions";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,3 +15,4 @@ const app = initializeApp(firebaseConfig);
 
 // 関数と同じリージョン（東京）を指定
 export const functions = getFunctions(app, "asia-northeast1");
+export const db = getFirestore(app);

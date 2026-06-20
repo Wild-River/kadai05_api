@@ -1,9 +1,8 @@
 import "./style.css";
 import { httpsCallable } from "firebase/functions";
-import { functions } from "./firebase.js";
-import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
+import { functions, db } from "./firebase.js";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
-const db = getFirestore();
 const composeBgm = httpsCallable(functions, "composeBgmFromPhoto");
 
 // 要素を取得
@@ -223,10 +222,9 @@ function downscaleToBase64(file, max, quality) {
 }
 
 /**
- * 生成された音楽を画面に追加表示する
- * @param {string} title
- * @param {string} comment
- * @param {string} audioUrl
+ * Firestoreから生成済みの音楽を新しい順に取得し、一覧として表示する。
+ * 各カードをクリックすると、その曲を再生する。
+ * @returns {Promise<void>}
  */
 async function showGeneratedMusic() {
   const q = query(
@@ -250,14 +248,22 @@ async function showGeneratedMusic() {
     item.className = "music-card";
 
     item.innerHTML = /*html*/`
-    <h3>${data.title}</h3>
-    <p>${data.reading}</p>
+        <img class="music-cover" src="${data.coverUrl || ''}" alt="">
+        <div class="music-info">
+          <h3>${data.title}</h3>
+          <p>${data.reading}</p>
+        </div>
     `;
 
     item.addEventListener("click", () => {
       player.src = data.audioUrl;
       trackTitle.textContent = data.title;
       trackComment.textContent = data.reading;
+      if (data.coverUrl) {
+        photoPreview.src = data.coverUrl;
+        photoPreview.style.display = "block";
+        photoPlaceholder.style.display = "none";
+      }
       player.play();
     })
 
