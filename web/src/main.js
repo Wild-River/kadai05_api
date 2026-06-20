@@ -1,11 +1,28 @@
 import "./style.css";
 import { httpsCallable } from "firebase/functions";
-import { functions, db } from "./firebase.js";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { functions, db, auth } from "./firebase.js";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import {
+  signInAnonymously,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  linkWithPopup,
+  signInWithPopup,
+  linkWithRedirect,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut,
+} from "firebase/auth";
 
 const composeBgm = httpsCallable(functions, "composeBgmFromPhoto");
 
+// Viteの開発サーバーかどうか（trueなら開発、falseなら本番）
+const isDev = import.meta.env.DEV;
+
 // 要素を取得
+const btnLogin = document.getElementById("btn-login");
+const userLabel = document.getElementById("user-label");
+const btnLogout = document.getElementById("btn-logout");
 const fileInput = document.getElementById("photo-input");
 const photoFrame = document.getElementById("photo-frame");
 const photoPreview = document.getElementById("photo-preview");
@@ -25,6 +42,93 @@ const timeCurrent = document.getElementById("time-current");
 const timeTotal = document.getElementById("time-total");
 
 const generateMusic = document.getElementById("generated-music");
+
+// ===== 匿名ログイン =====
+let currentUid = null;
+
+// リダイレクトから戻ってきたときの結果を処理
+getRedirectResult(auth).catch((err) => {
+  if (err.code === "auth/credential-already-in-use") {
+    // 既に使われているアカウントなら、通常ログインで入り直す
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    signInWithRedirect(auth, provider);
+  } else {
+    console.error("リダイレクト認証エラー:", err);
+  }
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // ログイン済み（匿名 or 正式）
+    currentUid = user.uid;
+    showGeneratedMusic();   // ログインできてから一覧を取得
+    // ログイン状態を表示に反映
+    if (user.isAnonymous) {
+      userLabel.textContent = "ゲストとして利用中";
+      btnLogin.style.display = "inline-block";   // 登録ボタンを見せる
+      btnLogout.style.display = "none";
+    } else {
+      const googleData = user.providerData.find(p => p.providerId === "google.com");
+      const name = user.displayName || (googleData && googleData.displayName);
+      userLabel.textContent = name ? `${name} さん` : "ログイン中";
+      btnLogin.style.display = "none";           // 登録済みなら隠す
+      btnLogout.style.display = "inline-block";
+    }
+  } else {
+    // 未ログインなら匿名ログインする
+    signInAnonymously(auth).catch((err) => {
+      console.error("匿名ログイン失敗:", err);
+    });
+  }
+});
+
+// ===== Googleアカウントへ登録（昇格）=====
+btnLogin.onclick = async () => {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: "select_account",   // 毎回アカウント選択画面を出す
+  });
+
+  try {
+    if (isDev) {
+      // 開発環境：ポップアップ
+      await linkWithPopup(auth.currentUser, provider);
+    } else {
+      // 本番環境：リダイレクト
+      await linkWithRedirect(auth.currentUser, provider);
+    }
+  } catch (err) {
+    if (err.code === "auth/credential-already-in-use") {
+      // そのGoogleアカウントが既に別データで使われている場合
+      // → 普通にそのアカウントでログインし直す
+      const provider2 = new GoogleAuthProvider();
+      provider2.setCustomParameters({
+        prompt: "select_account",   // こちらにも設定
+      });
+      if (isDev) {
+        await signInWithPopup(auth, provider2);
+      } else {
+        await signInWithRedirect(auth, provider2);
+      }
+    } else {
+      console.error("登録に失敗:", err);
+    }
+  }
+};
+
+
+
+// ===== ログアウト =====
+btnLogout.onclick = async () => {
+  try {
+    await signOut(auth);
+    // ログアウトすると onAuthStateChanged が user=null で呼ばれ、
+    // 自動で匿名ログインし直す（ゲスト状態に戻る）
+  } catch (err) {
+    console.error("ログアウト失敗:", err);
+  }
+};
 
 /**
  * 3つのコントロールボタン（再生・戻る・進む）の有効/無効をまとめて切り替える。
@@ -227,8 +331,11 @@ function downscaleToBase64(file, max, quality) {
  * @returns {Promise<void>}
  */
 async function showGeneratedMusic() {
+  if (!currentUid) return;
+
   const q = query(
     collection(db, "generated_music"),
+    where("uid", "==", currentUid),
     orderBy("createdAt", "desc")
   );
 
@@ -270,5 +377,3 @@ async function showGeneratedMusic() {
     generateMusic.appendChild(item);
   })
 }
-
-showGeneratedMusic();

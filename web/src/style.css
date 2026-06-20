@@ -24,9 +24,10 @@ body {
   font-family: 'Quicksand', 'Zen Maru Gothic', sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+  align-items: center;
 }
 
 #app {
@@ -496,4 +497,86 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
+}
+
+/* ===== 最上部の認証バー ===== */
+.auth-bar {
+  /* width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 4px 2px 12px;
+  border-bottom: 1px solid var(--shadow-dark);
+  margin-bottom: 8px; */
+
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 24px;
+  background: var(--bg); /* 背景を付けないと、下の要素が透ける */
+  border-bottom: 1px solid var(--shadow-dark);
+}
+
+.user-label {
+  font-size: 12px;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
+  margin-right: auto; /* ユーザー名を左端へ、ボタンを右端へ */
+}
+
+.auth-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* ユーザー表示（◯◯さん / ゲストとして利用中） */
+.user-label {
+  font-size: 12px;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
+}
+
+/* 認証ボタン（登録・ログアウト共通） */
+.auth-btn {
+  border: none;
+  background: var(--surface);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow:
+    3px 3px 7px var(--shadow-dark),
+    -3px -3px 7px var(--shadow-light);
+  transition: box-shadow 0.15s;
+}
+
+/* 押したときへこむ */
+.auth-btn:active {
+  box-shadow:
+    inset 2px 2px 5px var(--shadow-dark),
+    inset -2px -2px 5px var(--shadow-light);
+}
+
+/* ログアウトボタンだけ、控えめな色に */
+#btn-logout {
+  color: var(--text-sub);
+}
+
+#btn-login {
+  background: var(--accent-grad);
+  color: #fff;
 }
