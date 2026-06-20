@@ -11,7 +11,7 @@
 
 ## ③アプリのデプロイURL
 
-https://photo-music-2026gs.web.app/
+https://photo-music-2026gs.firebaseapp.com/
 
 ## ④アプリのログイン用IDまたはPassword（ある場合）
 
