@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 自分の曲だけ読める。書き込みは Cloud Functions（Admin SDK）のみ
+    match /generated_music/{id} {
+      allow read: if request.auth != null
+                  && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+  }
+}
