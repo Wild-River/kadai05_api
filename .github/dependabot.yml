@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+  # マイナー・パッチの更新は、1つの Pull Request にまとめる
+  - package-ecosystem: npm
+    directories:
+      - /web
+      - /functions
+    schedule:
+      interval: monthly
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - minor
+          - patch
