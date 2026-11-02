@@ -339,7 +339,15 @@ async function showGeneratedMusic() {
     orderBy("createdAt", "desc")
   );
 
-  const snapshot = await getDocs(q);
+  let snapshot;
+  try {
+    snapshot = await getDocs(q);
+  } catch (err) {
+    // 一覧だけの失敗なので、呼び出し元（生成処理など）には伝えない
+    console.error("一覧の取得に失敗:", err);
+    generateMusic.innerHTML = "<p>一覧を読み込めませんでした</p>";
+    return;
+  }
 
   if (snapshot.empty) {
     generateMusic.innerHTML = "<p>まだ音楽がありません</p>";
